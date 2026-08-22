@@ -1,0 +1,7 @@
+# 直接依存関係。再現可能な実行・Dockerビルドにはrequirements.lockを使用する。
+yfinance==1.6.0
+pandas==3.0.5
+pandas-ta==0.4.71b0
+numpy==2.2.6
+requests==2.34.2
+boto3==1.43.76
