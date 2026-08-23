@@ -1082,5 +1082,20 @@ CloudWatch Logs
 
 最初は「1〜10」までを第一目標にする。
 
-現状はSTEP 1とDockerfileの作成まで完了している。次はPythonとDockerが
-利用できる環境で、STEP 2の少数銘柄テストとSTEP 3のbuild/run確認を行う。
+---
+
+# 21. 現在の進捗
+
+2026年8月23日時点の進捗：
+
+- STEP 1〜8は完了
+- ローカルPythonとローカルDockerの少数銘柄テストに成功
+- S3への`raw`データと`processed/stocks.json`の保存を確認済み
+- Dockerイメージ`stock-screener-batch:v1`をECRへ登録済み
+- ECSクラスター、Task Definition、Execution Role、Task Role、CloudWatch Logs、
+  ネットワークを設定済み
+- AWSコンソールからFargateタスクを手動実行し、終了コード`0`を確認
+- Fargate実行後にS3へ新しいファイルが生成されることを確認
+- ECRの基本スキャンで脆弱性を検出したが、学習目的のため現時点では許容
+
+次回は**STEP 9：CloudWatch Logs確認**から再開する。
