@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="no-referrer">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; connect-src 'self' https://axkd5z9qdd.execute-api.ap-northeast-1.amazonaws.com; style-src 'self'; script-src 'self'; img-src 'self' data:; base-uri 'self'; form-action 'self'"
+    >
+    <title>Stock Compass | 米国株スクリーナー</title>
+    <meta
+      name="description"
+      content="ファンダメンタルとテクニカル指標から米国株を絞り込むスクリーナー"
+    >
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/app.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="Stock Compass ホーム">
+        <span class="brand-mark" aria-hidden="true">SC</span>
+        <span>
+          <strong>Stock Compass</strong>
+          <small>US equity screener</small>
+        </span>
+      </a>
+      <div class="data-note">
+        <span class="status-dot" aria-hidden="true"></span>
+        月次更新データ
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <p class="eyebrow">FUNDAMENTAL × TECHNICAL</p>
+        <h1 id="page-title">数字から、次の候補を見つける。</h1>
+        <p>
+          企業の成長性・割安性とテクニカル指標を組み合わせて、
+          米国株の候補をすばやく絞り込みます。
+        </p>
+      </section>
+
+      <form id="screening-form" class="screening-form" novalidate>
+        <section class="filter-panel" aria-labelledby="fundamental-title">
+          <div class="panel-heading">
+            <div>
+              <span class="section-number">01</span>
+              <h2 id="fundamental-title">ファンダメンタル</h2>
+            </div>
+            <p>企業規模・割安性・収益性で絞り込み</p>
+          </div>
+
+          <div class="field-grid">
+            <div class="field-pair">
+              <span class="field-title">時価総額 <small>10億USD</small></span>
+              <label>
+                <span>最小</span>
+                <input id="min-market-cap" type="number" min="0" step="0.1" value="1" inputmode="decimal">
+              </label>
+              <label>
+                <span>最大</span>
+                <input id="max-market-cap" type="number" min="0" step="0.1" inputmode="decimal" placeholder="指定なし">
+              </label>
+            </div>
+
+            <div class="field-pair">
+              <span class="field-title">PER <small>倍</small></span>
+              <label>
+                <span>最小</span>
+                <input id="min-per" type="number" step="0.1" inputmode="decimal" placeholder="指定なし">
+              </label>
+              <label>
+                <span>最大</span>
+                <input id="max-per" type="number" step="0.1" value="50" inputmode="decimal">
+              </label>
+            </div>
+
+            <div class="field-pair">
+              <span class="field-title">PBR <small>倍</small></span>
+              <label>
+                <span>最小</span>
+                <input id="min-pbr" type="number" step="0.1" inputmode="decimal" placeholder="指定なし">
+              </label>
+              <label>
+                <span>最大</span>
+                <input id="max-pbr" type="number" step="0.1" inputmode="decimal" placeholder="指定なし">
+              </label>
+            </div>
+
+            <div class="field-pair">
+              <span class="field-title">配当利回り <small>%</small></span>
+              <label>
+                <span>最小</span>
+                <input id="min-dividend-yield" type="number" step="0.1" inputmode="decimal" placeholder="指定なし">
+              </label>
+              <label>
+                <span>最大</span>
+                <input id="max-dividend-yield" type="number" step="0.1" inputmode="decimal" placeholder="指定なし">
+              </label>
+            </div>
+
+            <label class="field">
+              <span class="field-title">最低ROE <small>%</small></span>
+              <input id="min-roe" type="number" step="0.1" value="10" inputmode="decimal">
+            </label>
+
+            <label class="field">
+              <span class="field-title">最低ROA <small>%</small></span>
+              <input id="min-roa" type="number" step="0.1" inputmode="decimal" placeholder="指定なし">
+            </label>
+
+            <label class="field">
+              <span class="field-title">最低売上成長率 <small>%</small></span>
+              <input id="min-revenue-growth" type="number" step="0.1" inputmode="decimal" placeholder="指定なし">
+            </label>
+
+            <label class="field">
+              <span class="field-title">最低EPS成長率 <small>%</small></span>
+              <input id="min-eps-growth" type="number" step="0.1" inputmode="decimal" placeholder="指定なし">
+            </label>
+
+            <label class="field">
+              <span class="field-title">EPS連続増加 <small>年</small></span>
+              <input id="min-eps-consecutive-years" type="number" min="0" step="1" inputmode="numeric" placeholder="指定なし">
+            </label>
+
+            <label class="field">
+              <span class="field-title">最低FCF利回り <small>%</small></span>
+              <input id="min-fcf-yield" type="number" step="0.1" inputmode="decimal" placeholder="指定なし">
+            </label>
+
+            <div class="field-pair">
+              <span class="field-title">インサイダー保有率 <small>%</small></span>
+              <label>
+                <span>最小</span>
+                <input id="min-insider-hold" type="number" step="0.1" inputmode="decimal" placeholder="指定なし">
+              </label>
+              <label>
+                <span>最大</span>
+                <input id="max-insider-hold" type="number" step="0.1" inputmode="decimal" placeholder="指定なし">
+              </label>
+            </div>
+
+            <label class="field">
+              <span class="field-title">セクター</span>
+              <select id="sector">
+                <option value="">すべて</option>
+                <option value="Technology">Technology</option>
+                <option value="Healthcare">Healthcare</option>
+                <option value="Financial Services">Financial Services</option>
+                <option value="Consumer Cyclical">Consumer Cyclical</option>
+                <option value="Consumer Defensive">Consumer Defensive</option>
+                <option value="Communication Services">Communication Services</option>
+                <option value="Industrials">Industrials</option>
+                <option value="Basic Materials">Basic Materials</option>
+                <option value="Energy">Energy</option>
+                <option value="Utilities">Utilities</option>
+                <option value="Real Estate">Real Estate</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section class="filter-panel" aria-labelledby="technical-title">
+          <div class="panel-heading">
+            <div>
+              <span class="section-number">02</span>
+              <h2 id="technical-title">テクニカル</h2>
+            </div>
+            <label class="toggle">
+              <input id="include-technicals" type="checkbox" checked>
+              <span aria-hidden="true"></span>
+              テクニカルを使用
+            </label>
+          </div>
+
+          <fieldset id="technical-fields" class="field-grid technical-grid">
+            <legend class="sr-only">テクニカル条件</legend>
+            <div class="field-pair">
+              <span class="field-title">RSI</span>
+              <label>
+                <span>最小</span>
+                <input id="min-rsi" type="number" min="0" max="100" step="0.1" inputmode="decimal" placeholder="指定なし">
+              </label>
+              <label>
+                <span>最大</span>
+                <input id="max-rsi" type="number" min="0" max="100" step="0.1" inputmode="decimal" placeholder="指定なし">
+              </label>
+            </div>
+
+            <div class="field-pair">
+              <span class="field-title">52週高値からの乖離 <small>%</small></span>
+              <label>
+                <span>最小</span>
+                <input id="min-pct-from-52w-high" type="number" step="0.1" inputmode="decimal" placeholder="例 -20">
+              </label>
+              <label>
+                <span>最大</span>
+                <input id="max-pct-from-52w-high" type="number" step="0.1" inputmode="decimal" placeholder="例 -5">
+              </label>
+            </div>
+
+            <label class="field">
+              <span class="field-title">SMA 20</span>
+              <select id="above-sma-20">
+                <option value="">指定なし</option>
+                <option value="true">株価が上</option>
+                <option value="false">株価が下</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span class="field-title">SMA 50</span>
+              <select id="above-sma-50">
+                <option value="">指定なし</option>
+                <option value="true">株価が上</option>
+                <option value="false">株価が下</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span class="field-title">SMA 200</span>
+              <select id="above-sma-200">
+                <option value="">指定なし</option>
+                <option value="true">株価が上</option>
+                <option value="false">株価が下</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span class="field-title">トレンド</span>
+              <select id="trend-signal">
+                <option value="">すべて</option>
+                <option value="STRONG_BUY">STRONG BUY</option>
+                <option value="BUY">BUY</option>
+                <option value="NEUTRAL">NEUTRAL</option>
+                <option value="SELL">SELL</option>
+                <option value="STRONG_SELL">STRONG SELL</option>
+              </select>
+            </label>
+          </fieldset>
+        </section>
+
+        <div class="form-actions">
+          <p id="form-message" class="form-message" role="alert"></p>
+          <div>
+            <button id="reset-button" class="button button-secondary" type="reset">条件をリセット</button>
+            <button id="search-button" class="button button-primary" type="submit">
+              <span class="button-label">銘柄を検索</span>
+              <span class="spinner" aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <section id="results-section" class="results-section" aria-labelledby="results-title">
+        <div class="results-heading">
+          <div>
+            <p class="eyebrow">SCREENING RESULT</p>
+            <h2 id="results-title">検索結果</h2>
+            <p id="result-summary" class="result-summary" aria-live="polite">
+              条件を指定して検索してください。
+            </p>
+          </div>
+          <label class="sort-control">
+            <span>並び順</span>
+            <select id="sort-order" disabled>
+              <option value="market_cap-desc">時価総額：大きい順</option>
+              <option value="per-asc">PER：低い順</option>
+              <option value="roe-desc">ROE：高い順</option>
+              <option value="revenue_growth-desc">売上成長率：高い順</option>
+              <option value="eps_growth_rate-desc">EPS成長率：高い順</option>
+              <option value="dividend_yield-desc">配当利回り：高い順</option>
+              <option value="rsi-asc">RSI：低い順</option>
+            </select>
+          </label>
+        </div>
+
+        <div id="empty-state" class="empty-state">
+          <div class="empty-icon" aria-hidden="true">↗</div>
+          <strong>検索結果はここに表示されます</strong>
+          <p>初期条件は、時価総額10億USD以上・PER50倍以下・ROE10%以上です。</p>
+        </div>
+
+        <div id="table-wrap" class="table-wrap" hidden>
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Ticker</th>
+                <th scope="col">企業名</th>
+                <th scope="col">セクター</th>
+                <th scope="col" class="numeric">株価</th>
+                <th scope="col" class="numeric">時価総額</th>
+                <th scope="col" class="numeric">PER</th>
+                <th scope="col" class="numeric">PBR</th>
+                <th scope="col" class="numeric">ROE</th>
+                <th scope="col" class="numeric">売上成長</th>
+                <th scope="col" class="numeric">EPS成長</th>
+                <th scope="col" class="numeric">配当利回り</th>
+                <th scope="col" class="numeric">RSI</th>
+                <th scope="col">トレンド</th>
+              </tr>
+            </thead>
+            <tbody id="results-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>表示内容は投資判断の参考情報であり、投資助言ではありません。</p>
+      <p>Data powered by Yahoo Finance</p>
+    </footer>
+  </body>
+</html>
