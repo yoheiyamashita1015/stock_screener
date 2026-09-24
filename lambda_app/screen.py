@@ -162,6 +162,21 @@ def lambda_handler(event, context):
             raise ValueError("リクエストはJSONオブジェクトで指定してください")
         config = BatchConfig.from_env()
         storage = create_storage(config)
+        if payload.get("metadata_only") is True:
+            updated_at = storage.last_modified("processed/stocks.json")
+            return {
+                "statusCode": 200,
+                "headers": {"Content-Type": "application/json; charset=utf-8"},
+                "body": json.dumps(
+                    {
+                        "generated_at": updated_at.isoformat()
+                        if updated_at is not None
+                        else None
+                    },
+                    ensure_ascii=False,
+                ),
+            }
+
         data = storage.read_json("processed/stocks.json")
         results = screen_stocks(
             data,
@@ -171,7 +186,16 @@ def lambda_handler(event, context):
         return {
             "statusCode": 200,
             "headers": {"Content-Type": "application/json; charset=utf-8"},
-            "body": json.dumps({"count": len(results), "stocks": results}, ensure_ascii=False),
+            "body": json.dumps(
+                {
+                    "generated_at": data.get("generated_at")
+                    if isinstance(data, dict)
+                    else None,
+                    "count": len(results),
+                    "stocks": results,
+                },
+                ensure_ascii=False,
+            ),
         }
     except (ValueError, json.JSONDecodeError) as error:
         return {"statusCode": 400, "body": json.dumps({"error": str(error)}, ensure_ascii=False)}

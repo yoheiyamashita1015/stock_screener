@@ -11,6 +11,7 @@ __pycache__
 .smoke-test-*
 .batch-test-*
 data
+build
 *.csv
 *.xlsx
 archive

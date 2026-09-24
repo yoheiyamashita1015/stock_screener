@@ -13,11 +13,13 @@ __pycache__/
 .smoke-test-*/
 .batch-test-*/
 
-# 取得データとStreamlitのローカル状態
-data/cache/
-data/raw/
-data/processed/
-data/presets/
+# ローカル生成物・取得データ
+build/
+data/
+
+# 公開リポジトリには含めない旧実装・作業記録
+archive/
+aws_stock_screener_architecture_and_steps.md
 
 # OS / IDE
 .DS_Store

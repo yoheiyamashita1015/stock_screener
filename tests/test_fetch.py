@@ -140,5 +140,54 @@ class DataFetcherCacheTest(unittest.TestCase):
         )
 
 
+class StockListFilterTest(unittest.TestCase):
+    def setUp(self):
+        with patch("src.data_fetcher.yf.set_tz_cache_location"):
+            self.fetcher = DataFetcher()
+
+    def test_keeps_common_stock_and_adr(self):
+        stocks = pd.DataFrame(
+            [
+                {"symbol": "AAPL", "name": "Apple Inc. - Common Stock"},
+                {
+                    "symbol": "BABA",
+                    "name": "Alibaba Group Holding Limited American Depositary Shares",
+                },
+            ]
+        )
+
+        result = self.fetcher._filter_supported_stock_list(stocks)
+
+        self.assertEqual(result["symbol"].tolist(), ["AAPL", "BABA"])
+
+    def test_excludes_warrants_units_and_rights_by_name(self):
+        stocks = pd.DataFrame(
+            [
+                {"symbol": "AAA", "name": "Example Corp. Warrants"},
+                {"symbol": "BBB", "name": "Example Corp. Units"},
+                {"symbol": "CCC", "name": "Example Corp. Rights"},
+                {"symbol": "UNIT", "name": "Unitil Corporation Common Stock"},
+            ]
+        )
+
+        result = self.fetcher._filter_supported_stock_list(stocks)
+
+        self.assertEqual(result["symbol"].tolist(), ["UNIT"])
+
+    def test_excludes_nasdaq_fifth_character_identifiers_without_name(self):
+        stocks = pd.DataFrame(
+            [
+                {"symbol": "ADACW", "name": ""},
+                {"symbol": "TESTU", "name": ""},
+                {"symbol": "TESTR", "name": ""},
+                {"symbol": "GOOGL", "name": ""},
+            ]
+        )
+
+        result = self.fetcher._filter_supported_stock_list(stocks)
+
+        self.assertEqual(result["symbol"].tolist(), ["GOOGL"])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -4,6 +4,7 @@ import os
 import json
 import logging
 import random
+import re
 import threading
 import time
 import pickle
@@ -28,6 +29,12 @@ from config import (
 
 T = TypeVar("T")
 logger = logging.getLogger(__name__)
+
+NON_COMMON_SECURITY_NAME_PATTERN = re.compile(
+    r"\b(?:warrants?|units?|rights?)\b",
+    re.IGNORECASE,
+)
+NASDAQ_NON_COMMON_FIFTH_CHARACTERS = frozenset({"R", "U", "W"})
 
 
 class YahooRateLimiter:
@@ -128,15 +135,54 @@ class DataFetcher:
 
         # キャッシュが有効かチェック
         if self._is_cache_valid(cache_file, hours=CACHE_EXPIRY_STOCK_LIST_HOURS):
-            return pd.read_pickle(cache_file)
+            cached_stocks = pd.read_pickle(cache_file)
+            return self._filter_supported_stock_list(cached_stocks)
 
         # NASDAQとNYSEの銘柄リストを取得
-        stocks_df = self._fetch_stock_list_from_exchanges()
+        stocks_df = self._filter_supported_stock_list(
+            self._fetch_stock_list_from_exchanges()
+        )
 
         # キャッシュに保存
         stocks_df.to_pickle(cache_file)
 
         return stocks_df
+
+    def _filter_supported_stock_list(self, stocks: pd.DataFrame) -> pd.DataFrame:
+        """ワラント・ユニット・ライツを普通株の取得対象から除外する。"""
+        if stocks.empty or "symbol" not in stocks.columns:
+            return stocks
+
+        supported = stocks.apply(
+            lambda row: self._is_supported_stock_security(
+                row.get("symbol", ""), row.get("name", "")
+            ),
+            axis=1,
+        )
+        filtered = stocks.loc[supported].copy()
+        removed_count = len(stocks) - len(filtered)
+        if removed_count:
+            logger.info(
+                "非普通株を銘柄一覧から除外しました count=%d", removed_count
+            )
+        return filtered
+
+    def _is_supported_stock_security(self, symbol: object, name: object = "") -> bool:
+        """普通株として取得するシンボルか、名称とNASDAQ識別子から判定する。"""
+        normalized_symbol = str(symbol).strip().upper()
+        if not self._is_valid_symbol(normalized_symbol):
+            return False
+
+        normalized_name = "" if pd.isna(name) else str(name).strip()
+        if NON_COMMON_SECURITY_NAME_PATTERN.search(normalized_name):
+            return False
+
+        # NASDAQでは5文字目のR/U/Wが、それぞれrights/units/warrantsを表す。
+        # 名前がないフォールバック一覧でも除外できるようシンボルも確認する。
+        return not (
+            len(normalized_symbol) == 5
+            and normalized_symbol[-1] in NASDAQ_NON_COMMON_FIFTH_CHARACTERS
+        )
 
     def _fetch_stock_list_from_exchanges(self) -> pd.DataFrame:
         """取引所から銘柄リストを取得（NASDAQ公式FTPデータを優先使用）"""
@@ -223,10 +269,9 @@ class DataFetcher:
         return pd.DataFrame(columns=["symbol", "name", "exchange", "marketCap", "sector", "industry"])
 
     def _is_valid_symbol(self, symbol: str) -> bool:
-        """有効なティッカーシンボルかチェック（ワラント・ライツ・ユニット等を除外）"""
+        """取得処理で扱えるティッカーシンボル形式かチェックする。"""
         if not symbol or len(symbol) > 5:
             return False
-        # 特殊記号を含む場合は除外（ワラント: +W、ライツ: +R、ユニット: +U 等）
         return all(c.isalpha() or c == "-" for c in symbol)
 
     def _fetch_from_github(self) -> pd.DataFrame:

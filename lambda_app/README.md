@@ -2,6 +2,9 @@
 
 `screen.py`はS3の`processed/stocks.json`を読み込み、指定条件で銘柄を
 絞り込むLambdaコードです。Yahoo Financeには接続しません。
+レスポンスには、検索結果に加えて株式データの最終生成日時`generated_at`を含めます。
+`{"metadata_only": true}`を渡すと、銘柄データ本体を読み込まず、S3オブジェクトの
+最終更新日時だけを返します。Web画面はこれを初期表示時に利用します。
 
 ハンドラー:
 
